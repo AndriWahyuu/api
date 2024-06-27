@@ -17,7 +17,7 @@ class AuthController extends Controller
         $request = $request->validate([
             'name' => 'required|string',
             'email' => 'required|string|email',
-            'password' => 'required|string', // Konfirmasi kata sandi
+            'password' => 'required|string',
         ]);
 
         try {

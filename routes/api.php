@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\IncomesController;
 use App\Http\Controllers\ExpanseController;
+use App\Http\Controllers\DailyReportController;
 
 
 
@@ -39,4 +40,7 @@ Route::group(['middleware' => ['auth:sanctum']], function() {
     Route::resource('Expanse', ExpanseController::class)->only([
         'index', 'store', 'destroy', 'show', 'update'
     ]);
+    Route::get('/DailyReport/totals-incomes-expanse', [DailyReportController::class, 'getTotalIncomeExpanse']);
+    Route::get('/DailyReport/transaction-by-day', [DailyReportController::class, 'getTransactionsByDate']);
+
 });

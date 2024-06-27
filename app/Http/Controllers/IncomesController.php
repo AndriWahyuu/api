@@ -50,49 +50,66 @@ class IncomesController extends Controller
      */
     public function store(Request $request)
     {
-        $validator = Validator::make(
-            $request->all(),
-            [
-                'name' => 'required',
-                'amount' => 'required|gt:0',
-                'date_time' => 'required|date_format:Y-m-d',
-                'description' => 'required',
-            ],
-            [
-                'name.required' => 'Masukkan Nama Penghasilan!',
-                'amount.required' => 'Masukkan Jumlah Penghasilan!',
-                'amount.numeric' => 'Penulisan angka anda salah!',
-                'amount.gt:0' => "Jumlah tidak boleh 0",
-                'date_time.required' => 'Silahkan Pilih Tanggal!',
-                'date_time.date_format' => 'Format Tanggal tidak valid! Format yang benar adalah HH:MM',
-                'description.required' => 'Masukkan Deskripsi!',
-            ]
-        );
+        try {
+            // Validasi input
+            $validator = Validator::make(
+                $request->all(),
+                [
+                    'name' => 'required',
+                    'amount' => 'required|gt:0',
+                    'date_time' => 'required|date_format:Y-m-d',
+                    'description' => 'required',
+                ],
+                [
+                    'name.required' => 'Masukkan Nama Penghasilan!',
+                    'amount.required' => 'Masukkan Jumlah Penghasilan!',
+                    'amount.numeric' => 'Penulisan angka anda salah!',
+                    'amount.gt:0' => "Jumlah tidak boleh 0",
+                    'date_time.required' => 'Silahkan Pilih Tanggal!',
+                    'date_time.date_format' => 'Format Tanggal tidak valid! Format yang benar adalah Y-m-d',
+                    'description.required' => 'Masukkan Deskripsi!',
+                ]
+            );
 
-        if ($validator->fails()) {
+            // Jika validasi gagal
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'data' => $validator->errors()
+                ], 422); // 422 Unprocessable Entity
+            }
+
+            // Membuat entri baru
+            $income = Income::create([
+                'user_id' => Auth::user()->id,
+                'name' => $request->input('name'),
+                'amount' => $request->input('amount'),
+                'date_time' => $request->input('date_time'),
+                'description' => $request->input('description'),
+            ]);
+
+            // Memeriksa keberhasilan penciptaan
+            if (!$income) {
+                throw new Exception('Gagal menyimpan data penghasilan.');
+            }
+
+            // Memberikan respons sukses
+            return response()->json([
+                'success' => true,
+                'data' => $income,
+                'message' => 'Data Berhasil Disimpan!'
+            ], 201); // 201 Created
+
+        } catch (Exception $e) {
+            // Tangani kesalahan
             return response()->json([
                 'success' => false,
-                'data' => $validator->errors()
-            ], 401);
+                'message' => 'Gagal menyimpan data penghasilan.',
+                'error' => $e->getMessage(),
+            ], 500); // 500 Internal Server Error
         }
-
-        // $amount = str_replace(",", ".", "",$request->input('amount')); // Menghapus koma jika ada
-        // $amount = (float) $amount; // Konversi ke float
-
-        $income = Income::create([
-            'user_id' => Auth::user()->id,  // Pastikan untuk menyertakan user_id
-            'name' => $request->input('name'),
-            'amount' => $request->input('amount'),
-            'date_time' => $request->input('date_time'),
-            'description' => $request->input('description'),
-        ]);
-
-        return response()->json([
-            'success' => true,
-            'data' => $income,
-            'message' => 'Data Berhasil Disimpan!'
-        ], 201);
     }
+
 
 
     /**
@@ -103,20 +120,39 @@ class IncomesController extends Controller
      */
     public function show($id)
     {
-        $income = Income::find($id);
+        try {
+            // Pengecekan ID valid
+            if (!is_numeric($id) || $id <= 0) {
+                throw new Exception('ID tidak valid.');
+            }
 
-        if (!$income) {
+            // Mencari data penghasilan berdasarkan ID
+            $income = Income::find($id);
+
+            // Jika data tidak ditemukan
+            if (!$income) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Data not found'
+                ], 404);
+            }
+
+            // Memberikan respons sukses dengan data penghasilan
+            return response()->json([
+                'success' => true,
+                'data' => $income
+            ], 200);
+
+        } catch (Exception $e) {
+            // Tangani kesalahan
             return response()->json([
                 'success' => false,
-                'message' => 'Data not found'
-            ], 404);
+                'message' => 'Failed to retrieve income data.',
+                'error' => $e->getMessage(),
+            ], 500); // 500 Internal Server Error
         }
-
-        return response()->json([
-            'success' => true,
-            'data' => $income
-        ], 200);
     }
+
 
 
     /**
@@ -128,41 +164,61 @@ class IncomesController extends Controller
      */
     public function update(Request $request, Income $income)
     {
-        $validator = Validator::make($request->all(), [
-            'name' => 'required',
-            'amount' => 'required|numeric|gt:0',
-            'date_time' => 'required|date_format:Y-m-d',
-            'description' => 'required',
-        ], [
-            'name.required' => 'Masukkan Nama Penghasilan!',
-            'amount.required' => 'Masukkan Jumlah Penghasilan!',
-            'amount.numeric' => 'Penulisan angka anda salah!',
-            'amount.gt:0' => "Jumlah tidak boleh 0",
-            'date_time.required' => 'Silahkan Pilih Tanggal!',
-            'date_time.date_format' => 'Format Tanggal tidak valid! Format yang benar adalah YYYY-MM-DD',
-            'description.required' => 'Masukkan Deskripsi!',
-        ]);
+        try {
+            // Pastikan $income adalah instance dari Income
+            if (!$income instanceof Income) {
+                throw new Exception('Data tidak ditemukan.');
+            }
 
-        if ($validator->fails()) {
+            // Validasi input
+            $validator = Validator::make($request->all(), [
+                'name' => 'required',
+                'amount' => 'required|numeric|gt:0',
+                'date_time' => 'required|date_format:Y-m-d',
+                'description' => 'required',
+            ], [
+                'name.required' => 'Masukkan Nama Penghasilan!',
+                'amount.required' => 'Masukkan Jumlah Penghasilan!',
+                'amount.numeric' => 'Penulisan angka anda salah!',
+                'amount.gt:0' => "Jumlah tidak boleh 0",
+                'date_time.required' => 'Silahkan Pilih Tanggal!',
+                'date_time.date_format' => 'Format Tanggal tidak valid! Format yang benar adalah YYYY-MM-DD',
+                'description.required' => 'Masukkan Deskripsi!',
+            ]);
+
+            // Jika validasi gagal
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $validator->errors()
+                ], 400);
+            }
+
+            // Lakukan pembaruan data
+            $income->update([
+                'name' => $request->input('name'),
+                'amount' => $request->input('amount'),
+                'date_time' => $request->input('date_time'),
+                'description' => $request->input('description'),
+            ]);
+
+            // Berikan respons sukses
+            return response()->json([
+                'success' => true,
+                'message' => 'Data Berhasil Diupdate!',
+                'data' => $income
+            ], 200);
+
+        } catch (Exception $e) {
+            // Tangani kesalahan server
             return response()->json([
                 'success' => false,
-                'message' => $validator->errors()
-            ], 400);
+                'message' => 'Gagal memperbarui data penghasilan.',
+                'error' => $e->getMessage(),
+            ], 500); // 500 Internal Server Error
         }
-
-        $income->update([
-            'name' => $request->input('name'),
-            'amount' => $request->input('amount'),
-            'date_time' => $request->input('date_time'),
-            'description' => $request->input('description'),
-        ]);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Data Berhasil Diupdate!',
-            'data' => $income
-        ], 200);
     }
+
 
     /**
      * Remove the specified resource from storage.
@@ -172,18 +228,37 @@ class IncomesController extends Controller
      */
     public function destroy($id)
     {
-        $income = Income::find($id);
+        try {
+            // memastikan ID valid
+            if (!is_numeric($id) || $id <= 0) {
+                throw new Exception('ID tidak valid.');
+            }
 
-        if ($income) {
-            $income->delete();
-            return response()->json([
-                'status' => 'Data Berhasil Dihapus!'
-            ]);
-        } else {
+            // Cari data penghasilan berdasarkan ID
+            $income = Income::find($id);
+
+            // Jika data ditemukan, hapus
+            if ($income) {
+                $income->delete();
+                return response()->json([
+                    'status' => 'Data Berhasil Dihapus!'
+                ]);
+            } else {
+                // Jika data tidak ditemukan, berikan respons dengan kode 404
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Data not found'
+                ], 404);
+            }
+
+        } catch (Exception $e) {
+            // Tangani kesalahan
             return response()->json([
                 'status' => 'error',
-                'message' => 'Data not found'
-            ], 404);
+                'message' => 'Failed to delete income data.',
+                'error' => $e->getMessage(),
+            ], 500); // 500 Internal Server Error
         }
     }
+
 }
