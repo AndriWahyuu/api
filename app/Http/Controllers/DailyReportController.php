@@ -5,10 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Income;
 use App\Models\Expanse;
-use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
-
+use Carbon\Carbon;
 
 class DailyReportController extends Controller
 {
@@ -27,33 +25,36 @@ class DailyReportController extends Controller
 
             return response()->json($totals, 200);
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Terjadi kesalahan dalam mengambil total pendapatan dan pengeluaran. Silakan coba lagi nanti.'], 500); // Status Code 500 Internal Server Error jika terjadi kesalahan
+            return response()->json(['error' => 'Terjadi kesalahan dalam mengambil total pendapatan dan pengeluaran. Silakan coba lagi nanti.'], 500);
         }
     }
+
     public function getTransactionsByDate(Request $request)
     {
         try {
             // Mendapatkan tanggal dari permintaan atau menggunakan hari ini sebagai default
-            $date = $request->input('date', date('Y-m-d'));
+            $date = $request->input('date_time', Carbon::today()->toDateString());
+
+            // Menggunakan Carbon untuk memastikan format tanggal yang benar
+            $date = Carbon::createFromFormat('Y-m-d', $date)->toDateString();
 
             // Mengambil pemasukan berdasarkan tanggal
             $incomes = Income::where('user_id', Auth::user()->id)
-                ->whereDate('created_at', $date)
+                ->whereDate('date_time', $date)
                 ->get();
 
             // Mengambil pengeluaran berdasarkan tanggal
-            $expanses = Expanse::where('user_id', Auth::user()->id)
-                ->whereDate('created_at', $date)
+            $expenses = Expanse::where('user_id', Auth::user()->id)
+                ->whereDate('date_time', $date)
                 ->get();
 
             return response()->json([
                 'date' => $date,
                 'incomes' => $incomes,
-                'expenses' => $expanses,
-            ], 200); // Status Code 200 OK jika sukses
+                'expenses' => $expenses,
+            ], 200);
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Terjadi kesalahan dalam mengambil transaksi. Silakan coba lagi nanti.'], 500); // Status Code 500 Internal Server Error jika terjadi kesalahan
+            return response()->json(['error' => 'Terjadi kesalahan dalam mengambil transaksi. Silakan coba lagi nanti.'], 500);
         }
     }
-
 }
