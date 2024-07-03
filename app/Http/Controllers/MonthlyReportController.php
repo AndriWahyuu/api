@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 use App\Models\Income;
 use App\Models\Expanse; 
 use Carbon\Carbon;
@@ -45,6 +46,8 @@ class MonthlyReportController extends Controller
                 $remaining_balance = $total_income - $total_expenses;
 
                 $formattedReports[] = [
+                    'success' => true,
+                    'user_id' => Auth::user()->id,
                     'year' => $year,
                     'month' => Carbon::create()->month($month)->format('F'), // Ubah angka bulan menjadi nama bulan
                     'total_income' => $total_income,
@@ -58,4 +61,7 @@ class MonthlyReportController extends Controller
             return response()->json(['error' => 'Failed to fetch monthly reports.', 'message' => $e->getMessage()], 500);
         }
     }
+
+    
+    
 }

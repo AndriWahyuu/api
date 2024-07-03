@@ -39,10 +39,10 @@ class DailyReportController extends Controller
     {
         try {
             // Mendapatkan tanggal dari permintaan atau menggunakan hari ini sebagai default
-            $date = $request->input('date_time', Carbon::today()->toDateString());
+            $dateString = $request->input('date_time', Carbon::today()->toDateString());
 
-            // Menggunakan Carbon untuk memastikan format tanggal yang benar
-            $date = Carbon::createFromFormat('Y-m-d', $date)->toDateString();
+            // Mengonversi format tanggal dari input Flutter (1/7/2024) ke format Y-m-d
+            $date = Carbon::createFromFormat('j/n/Y', $dateString)->toDateString();
 
             // Mengambil pemasukan berdasarkan tanggal
             $incomes = Income::where('user_id', Auth::user()->id)
