@@ -14,19 +14,19 @@ class MonthlyReportController extends Controller
     {
         try {
             $incomeReports = Income::select(
-                DB::raw('YEAR(date) as year'),
-                DB::raw('MONTH(date) as month'),
+                DB::raw('YEAR(date_time) as year'),
+                DB::raw('MONTH(date_time) as month'),
                 DB::raw('SUM(amount) as total_income')
             )
-            ->groupBy(DB::raw('YEAR(date)'), DB::raw('MONTH(date)'))
+            ->groupBy(DB::raw('YEAR(date_time)'), DB::raw('MONTH(date_time)'))
             ->get();
 
             $expanseReports = Expanse::select(
-                DB::raw('YEAR(date) as year'),
-                DB::raw('MONTH(date) as month'),
+                DB::raw('YEAR(date_time) as year'),
+                DB::raw('MONTH(date_time) as month'),
                 DB::raw('SUM(amount) as total_expenses')
             )
-            ->groupBy(DB::raw('YEAR(date)'), DB::raw('MONTH(date)'))
+            ->groupBy(DB::raw('YEAR(date_time)'), DB::raw('MONTH(date_time)'))
             ->get();
 
             // Gabungkan data pendapatan dan pengeluaran ke dalam satu array untuk laporan bulanan
