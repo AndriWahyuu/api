@@ -44,5 +44,5 @@ Route::group(['middleware' => ['auth:sanctum']], function() {
     Route::get('/daily-report/totals-incomes-expanse', [DailyReportController::class, 'getTotalIncomeExpanse']);
     Route::get('/daily-report/transaction-by-day', [DailyReportController::class, 'getTransactionsByDate']);
     Route::get('/monthly-report/monthly-report', [MonthlyReportController::class, 'getMonthlyReports']);
-    Route::get('/monthly-report/detail-monthly-report/{year}/{month}', [DetailReportController::class, 'getMonthlyReportDetail']);
+    Route::get('/monthly-report/detail-monthly-report', [DetailReportController::class, 'getMonthlyReportDetail']);
 });
