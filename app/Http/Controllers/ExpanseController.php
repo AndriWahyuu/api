@@ -21,6 +21,12 @@ class ExpanseController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
+
+     public function __construct()
+    {
+        $this->middleware('auth:sanctum');
+    }
+
     public function index()
     {
         $expanse = Expanse::where('user_id', Auth::id())->orderBy('created_at', 'DESC')->get();

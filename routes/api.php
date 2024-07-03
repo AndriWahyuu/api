@@ -1,13 +1,14 @@
 <?php
 
 use App\Http\Controllers\AuthController;
-use App\Models\Expanse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\IncomesController;
 use App\Http\Controllers\ExpanseController;
 use App\Http\Controllers\DailyReportController;
+use App\Http\Controllers\MonthlyReportController;
+use App\Http\Controllers\DetailReportController;
 
 
 
@@ -27,7 +28,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 Route::post('/register', [AuthController::class, 'Register']);
-Route::post('/login', [AuthController::class, 'Login']);
+Route::post('/login', [AuthController::class, 'Login'])->name('login');
 
 Route::group(['middleware' => ['auth:sanctum']], function() {
     Route::get('/auth/check', [AuthController::class, 'Check']);
@@ -37,10 +38,12 @@ Route::group(['middleware' => ['auth:sanctum']], function() {
     Route::resource('incomes', IncomesController::class)->only([
         'index', 'store', 'destroy', 'show', 'update'
     ]);
-    Route::resource('Expanse', ExpanseController::class)->only([
+    Route::resource('expanse', ExpanseController::class)->only([
         'index', 'store', 'destroy', 'show', 'update'
     ]);
-    Route::get('/DailyReport/totals-incomes-expanse', [DailyReportController::class, 'getTotalIncomeExpanse']);
-    Route::get('/DailyReport/transaction-by-day', [DailyReportController::class, 'getTransactionsByDate']);
-
+    Route::get('/daily-report/totals-incomes-expanse', [DailyReportController::class, 'getTotalIncomeExpanse']);
+    Route::get('/daily-report/transaction-by-day', [DailyReportController::class, 'getTransactionsByDate']);
+    Route::get('/monthly-report/monthly-report', [MonthlyReportController::class, 'getMonthlyReports']);
+    Route::get('/monthly-report/detail-monthly-report', [DetailReportController::class, 'getMonthlyReportDetail']);
+    
 });

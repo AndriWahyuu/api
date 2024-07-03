@@ -19,11 +19,17 @@ class DailyReportController extends Controller
     {
         try {
             $totals = [
-                'total_income' => Income::where('user_id', Auth::user()->id)->sum('nominal'),
-                'total_expanse' => Expanse::where('user_id', Auth::user()->id)->sum('nominal'),
+                'total_income' => Income::where('user_id', Auth::user()->id)->sum('amount'),
+                'total_expanse' => Expanse::where('user_id', Auth::user()->id)->sum('amount'),
             ];
 
-            return response()->json($totals, 200);
+            return response()->json([
+                'success' => true,
+                'user_id' => Auth::user()->id,
+                'data' => $totals,
+                'message' => 'Total Berhasil Ditampilkan!'
+            ], 200);
+
         } catch (\Exception $e) {
             return response()->json(['error' => 'Terjadi kesalahan dalam mengambil total pendapatan dan pengeluaran. Silakan coba lagi nanti.'], 500);
         }
@@ -54,7 +60,7 @@ class DailyReportController extends Controller
                 'expenses' => $expenses,
             ], 200);
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Terjadi kesalahan dalam mengambil transaksi. Silakan coba lagi nanti.'], 500);
+            return response()->json(['error' => 'Terjadi kesalahan dalam menampilkan transaksi. Silakan coba lagi nanti.'], 500);
         }
     }
 }

@@ -4,8 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use App\Models\Income; // Gunakan model Income
-use App\Models\Expanse; // Gunakan model Expense
+use App\Models\Income;
+use App\Models\Expanse; 
 use Carbon\Carbon;
 
 class MonthlyReportController extends Controller
@@ -13,7 +13,6 @@ class MonthlyReportController extends Controller
     public function getMonthlyReports()
     {
         try {
-            // Ambil data pendapatan per bulan dari tabel income
             $incomeReports = Income::select(
                 DB::raw('YEAR(date) as year'),
                 DB::raw('MONTH(date) as month'),
@@ -22,7 +21,6 @@ class MonthlyReportController extends Controller
             ->groupBy(DB::raw('YEAR(date)'), DB::raw('MONTH(date)'))
             ->get();
 
-            // Ambil data pengeluaran per bulan dari tabel expense
             $expanseReports = Expanse::select(
                 DB::raw('YEAR(date) as year'),
                 DB::raw('MONTH(date) as month'),
