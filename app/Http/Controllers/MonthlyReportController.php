@@ -14,11 +14,14 @@ class MonthlyReportController extends Controller
     public function getMonthlyReports()
     {
         try {
+            $userId = Auth::id(); // Ambil ID pengguna yang sedang login
+
             $incomeReports = Income::select(
                 DB::raw('YEAR(date_time) as year'),
                 DB::raw('MONTH(date_time) as month'),
                 DB::raw('SUM(amount) as total_income')
             )
+            ->where('user_id', $userId) // Filter berdasarkan pengguna yang sedang login
             ->groupBy(DB::raw('YEAR(date_time)'), DB::raw('MONTH(date_time)'))
             ->get();
 
@@ -27,6 +30,7 @@ class MonthlyReportController extends Controller
                 DB::raw('MONTH(date_time) as month'),
                 DB::raw('SUM(amount) as total_expenses')
             )
+            ->where('user_id', $userId) // Filter berdasarkan pengguna yang sedang login
             ->groupBy(DB::raw('YEAR(date_time)'), DB::raw('MONTH(date_time)'))
             ->get();
 
@@ -47,7 +51,7 @@ class MonthlyReportController extends Controller
 
                 $formattedReports[] = [
                     'success' => true,
-                    'user_id' => Auth::user()->id,
+                    'user_id' => $userId,
                     'year' => $year,
                     'month' => Carbon::create()->month($month)->format('F'), // Ubah angka bulan menjadi nama bulan
                     'total_income' => $total_income,
@@ -61,7 +65,4 @@ class MonthlyReportController extends Controller
             return response()->json(['error' => 'Failed to fetch monthly reports.', 'message' => $e->getMessage()], 500);
         }
     }
-
-    
-    
 }

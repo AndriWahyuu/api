@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use App\Models\Income;
 use App\Models\Expanse;
 use Carbon\Carbon;
@@ -21,25 +22,32 @@ class DetailReportController extends Controller
                 return response()->json(['error' => 'Year and month parameters are required.'], 400);
             }
 
-            // Ambil total pendapatan untuk bulan tertentu
-            $totalIncome = Income::whereYear('date_time', $year)
+            // Ambil ID pengguna yang sedang login
+            $userId = Auth::id();
+
+            // Ambil total pendapatan untuk bulan tertentu berdasarkan pengguna yang sedang login
+            $totalIncome = Income::where('user_id', $userId)
+                ->whereYear('date_time', $year)
                 ->whereMonth('date_time', $month)
                 ->sum('amount');
 
-            // Ambil total pengeluaran untuk bulan tertentu
-            $totalExpenses = Expanse::whereYear('date_time', $year)
+            // Ambil total pengeluaran untuk bulan tertentu berdasarkan pengguna yang sedang login
+            $totalExpenses = Expanse::where('user_id', $userId)
+                ->whereYear('date_time', $year)
                 ->whereMonth('date_time', $month)
                 ->sum('amount');
 
             // Hitung sisa saldo
             $remainingBalance = $totalIncome - $totalExpenses;
 
-            // Ambil daftar transaksi untuk bulan tertentu
-            $incomeTransactions = Income::whereYear('date_time', $year)
+            // Ambil daftar transaksi untuk bulan tertentu berdasarkan pengguna yang sedang login
+            $incomeTransactions = Income::where('user_id', $userId)
+                ->whereYear('date_time', $year)
                 ->whereMonth('date_time', $month)
                 ->get();
 
-            $expenseTransactions = Expanse::whereYear('date_time', $year)
+            $expenseTransactions = Expanse::where('user_id', $userId)
+                ->whereYear('date_time', $year)
                 ->whereMonth('date_time', $month)
                 ->get();
 
